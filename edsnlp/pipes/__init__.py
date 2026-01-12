@@ -18,11 +18,14 @@ if TYPE_CHECKING:
     from .core.normalizer.spaces.factory import create_component as spaces
     from .core.sentences.factory import create_component as sentences
     from .core.terminology.factory import create_component as terminology
+    from .llm.llm_markup_extractor import LlmMarkupExtractor as llm_markup_extractor
     from .misc.consultation_dates.factory import create_component as consultation_dates
     from .misc.dates.factory import create_component as dates
+    from .misc.explode import Explode as explode
     from .misc.quantities.factory import create_component as quantities
     from .misc.reason.factory import create_component as reason
     from .misc.sections.factory import create_component as sections
+    from .misc.split import Split as split
     from .misc.tables.factory import create_component as tables
     from .ner.adicap.factory import create_component as adicap
     from .ner.behaviors.alcohol.factory import create_component as alcohol
@@ -58,11 +61,37 @@ if TYPE_CHECKING:
     )
     from .ner.disorders.solid_tumor.factory import create_component as solid_tumor
     from .ner.drugs.factory import create_component as drugs
+    from .ner.frailty.autonomy.factory import create_component as autonomy
+    from .ner.frailty.cognition.factory import create_component as cognition
+    from .ner.frailty.frailty.factory import create_component as frailty
+    from .ner.frailty.general_status.factory import create_component as general_status
+    from .ner.frailty.geriatric_assessment.factory import (
+        create_component as geriatric_assessment,
+    )
+    from .ner.frailty.incontinence.factory import create_component as incontinence
+    from .ner.frailty.mobility.factory import create_component as mobility
+    from .ner.frailty.nutrition.factory import create_component as nutrition
+    from .ner.frailty.pain.factory import create_component as pain
+    from .ner.frailty.polymed.factory import create_component as polymed
+    from .ner.frailty.scores.adl.factory import create_component as adl
+    from .ner.frailty.scores.g8.factory import create_component as g8
+    from .ner.frailty.scores.gds.factory import create_component as gds
+    from .ner.frailty.scores.iadl.factory import create_component as iadl
+    from .ner.frailty.scores.mms.factory import create_component as mms
+    from .ner.frailty.scores.moca.factory import create_component as moca
+    from .ner.frailty.scores.ps.factory import create_component as ps
+    from .ner.frailty.scores.rockwood.factory import create_component as rockwood
+    from .ner.frailty.scores.tug.factory import create_component as tug
+    from .ner.frailty.scores.walk_speed.factory import create_component as walk_speed
+    from .ner.frailty.sensory.factory import create_component as sensory
+    from .ner.frailty.thymic.factory import create_component as thymic
     from .ner.scores.charlson.factory import create_component as charlson
     from .ner.scores.elston_ellis.factory import create_component as elston_ellis
     from .ner.scores.emergency.ccmu.factory import create_component as emergency_ccmu
     from .ner.scores.emergency.gemsa.factory import create_component as emergency_gemsa
-    from .ner.scores.emergency.priority.factory import create_component as emergency_priority
+    from .ner.scores.emergency.priority.factory import (
+        create_component as emergency_priority,
+    )
     from .ner.scores.factory import create_component as score
     from .ner.scores.sofa.factory import create_component as sofa
     from .ner.suicide_attempt.factory import create_component as suicide_attempt
@@ -74,14 +103,17 @@ if TYPE_CHECKING:
     from .qualifiers.negation.factory import create_component as negation
     from .qualifiers.reported_speech.factory import create_component as reported_speech
     from .qualifiers.reported_speech.factory import create_component as rspeech
-    from .trainable.ner_crf.factory import create_component as ner_crf
-    from .trainable.biaffine_dep_parser.factory import create_component as biaffine_dep_parser
+    from .trainable.biaffine_dep_parser.factory import (
+        create_component as biaffine_dep_parser,
+    )
+    from .trainable.embeddings.span_pooler.factory import (
+        create_component as span_pooler,
+    )
+    from .trainable.embeddings.text_cnn.factory import create_component as text_cnn
+    from .trainable.embeddings.transformer.factory import (
+        create_component as transformer,
+    )
     from .trainable.extractive_qa.factory import create_component as extractive_qa
+    from .trainable.ner_crf.factory import create_component as ner_crf
     from .trainable.span_classifier.factory import create_component as span_classifier
     from .trainable.span_linker.factory import create_component as span_linker
-    from .trainable.embeddings.span_pooler.factory import create_component as span_pooler
-    from .trainable.embeddings.transformer.factory import create_component as transformer
-    from .trainable.embeddings.text_cnn.factory import create_component as text_cnn
-    from .misc.split import Split as split
-    from .misc.explode import Explode as explode
-    from .llm.llm_markup_extractor import LlmMarkupExtractor as llm_markup_extractor
