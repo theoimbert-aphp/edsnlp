@@ -25,6 +25,7 @@ def flatten_dict(d, path=""):
         for k, v in flatten_dict(val, f"{path}/{key}" if path else key).items()
     }
 
+
 def sanitize_hparams(values: Dict[str, Any]) -> Dict[str, Any]:
     """
     TensorBoard only supports scalar hyperparameters.
