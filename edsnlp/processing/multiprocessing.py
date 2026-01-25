@@ -1140,6 +1140,9 @@ class MultiprocessingStreamExecutor:
         except BaseException as e:
             self.error = e
             raise
+        else:
+            if self.error:
+                raise self.error
         finally:
             self.teardown()
 
