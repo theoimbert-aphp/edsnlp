@@ -26,6 +26,20 @@ def flatten_dict(d, path=""):
     }
 
 
+def sanitize_hparams(values: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    TensorBoard only supports scalar hyperparameters.
+    Convert unsupported types to strings.
+    """
+    sanitized = {}
+    for key, value in values.items():
+        if isinstance(value, (int, float, str, bool)):
+            sanitized[key] = value
+        else:
+            sanitized[key] = str(value)
+    return sanitized
+
+
 class CSVTracker(accelerate.tracking.GeneralTracker):
     name = "csv"
     requires_logging_directory = True
@@ -252,6 +266,7 @@ class TensorBoardTracker(accelerate.tracking.TensorBoardTracker):
 
     def store_init_configuration(self, values: Dict[str, Any]):
         values = flatten_dict(values)
+        values = sanitize_hparams(values)
         return super().store_init_configuration(values)
 
     def log(self, values: dict, step: Optional[int] = None, **kwargs):
