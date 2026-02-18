@@ -33,7 +33,6 @@ altered = dict(
         r"syndromes? extra(?:[\s-])?pyramida(?:l|ux)",
         r"signes? extra(?:[\s-])?pyramida(?:l|ux)",
         r"syndromes? parkinsonn?iens?",
-        "maladie de parkinson",
         "fonte musculaire",
         "sarcopenie",
     ],
@@ -82,11 +81,15 @@ other = dict(
         "test(?:ing)? moteur",
         "force motrice",
         "station debout",
+        "station tandem",
+        r"station (mono|uni)?podal",
         r"(?:sur le )plan (?:loco[\s-]?)?moteur",
         "travail sur l'equilibre",
         r"lutter contre l'enraidissement",
         "renforcement musculaire",
         "genee? dans son activite physique",
+        "force de prehension",
+        "vitesse de marche",
     ],
     regex_attr="NORM",
     assign=make_status_assign(-4, 4),
@@ -118,7 +121,7 @@ ralentissement = dict(
 )
 
 WALKING_ALTERED_COMPLEMENTS = [
-    "peu",
+    r"(?<!un )\bpeu\b",
     "a petits? pas",
     "troubles?",
     "renforcer",

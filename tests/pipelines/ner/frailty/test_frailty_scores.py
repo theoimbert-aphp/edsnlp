@@ -1,15 +1,22 @@
 import pytest
 import spacy
 from adl import results_adl
+from bref import results_bref
+from chair_stand import results_chair_stand
+from en_eva import results_en_eva
 from g8 import results_g8
 from gds import results_gds
 from iadl import results_iadl
+from mini_cog import results_mini_cog
+from mini_gds import results_mini_gds
 from mms import results_mms
 from moca import results_moca
 from ps import results_ps
 from rockwood import results_rockwood
+from sppb import results_sppb
 from tug import results_tug
-from walk_speed import results_walk_speed
+
+from tests.pipelines.ner.frailty.gait_speed import results_gait_speed
 
 results = dict(
     adl={"results": results_adl, "domain": "autonomy"},
@@ -17,11 +24,17 @@ results = dict(
     mms={"results": results_mms, "domain": "cognition"},
     moca={"results": results_moca, "domain": "cognition"},
     tug={"results": results_tug, "domain": "mobility"},
-    walk_speed={"results": results_walk_speed, "domain": "mobility"},
+    gait_speed={"results": results_gait_speed, "domain": "mobility"},
     gds={"results": results_gds, "domain": "thymic"},
-    g8={"results": results_g8, "domain": "g8"},
+    mini_gds={"results": results_mini_gds, "domain": "thymic"},
+    g8_score={"results": results_g8, "domain": "g8"},
     ps={"results": results_ps, "domain": "general_status"},
     rockwood={"results": results_rockwood, "domain": "general_status"},
+    bref={"results": results_bref, "domain": "cognition"},
+    chair_stand={"results": results_chair_stand, "domain": "mobility"},
+    en_eva={"results": results_en_eva, "domain": "pain"},
+    mini_cog={"results": results_mini_cog, "domain": "cognition"},
+    sppb={"results": results_sppb, "domain": "mobility"},
 )
 
 
@@ -54,6 +67,8 @@ class FrailtyScoreTester:
                 # No match expected
                 assert len(pred.ents) == 0
                 continue
+            assert self.domain in pred.spans
+            assert self.score in pred.spans
             value, severity = expected
             assert len(pred.ents) == 1
             ent = pred.ents[0]

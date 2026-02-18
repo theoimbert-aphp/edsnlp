@@ -49,13 +49,11 @@ altered = dict(
         r"dysthymi(?:e|que)",
         "desesperee?",
         "desespoir",
+        "perte d'envie",
     ],
     regex_attr="NORM",
 )
 
-
-HEALTHY_SLEEP_COMPLEMENTS = HEALTHY_STATUS_COMPLEMENTS + ["nocturne", "nuit"]
-ALTERED_SLEEP_COMPLEMENTS = ALTERED_STATUS_COMPLEMENTS + ["diurne", "jour"]
 sleep = dict(
     source="other_sleep",
     regex=["sommeil", "endormissement", r"\bdort\b"],
@@ -67,18 +65,36 @@ sleep = dict(
             regex=["gelule", "cachet", "comprime", "souhaite"],
             window=(-6, 6),
         ),
+        dict(
+            name="paradoxal",
+            regex=["paradoxal"],
+            window=3,
+        ),
     ],
     assign=[
         dict(
-            name="sleep_good",
-            regex=make_assign_regex(HEALTHY_SLEEP_COMPLEMENTS),
+            name="sleep_healthy",
+            regex=make_assign_regex(HEALTHY_STATUS_COMPLEMENTS),
             window=(-4, 4),
         ),
         dict(
             name="sleep_bad",
-            regex=make_assign_regex(ALTERED_SLEEP_COMPLEMENTS),
+            regex=make_assign_regex(ALTERED_STATUS_COMPLEMENTS),
             window=(-4, 4),
         ),
+    ],
+)
+
+insomnia = dict(
+    source="altered_insomnia",
+    regex=["insomnie"],
+    regex_attr="NORM",
+    assign=[
+        dict(
+            name="thymic_insomnia",
+            regex=make_assign_regex([r"reveil\sprecoce", "endormissement"]),
+            window=4,
+        )
     ],
 )
 
@@ -86,17 +102,34 @@ night = dict(
     source="other_night",
     regex=["nuits?"],
     regex_attr="NORM",
-    assign=make_status_assign(-4, 4, priority=False),
-    include=make_include_dict_from_list(make_status_assign(-4, 4)),
+    assign=make_status_assign(-2, 2, priority=False),
+    include=make_include_dict_from_list(make_status_assign(-2, 2)),
 )
 
 troubles = dict(
-    source="altered_troubles",
+    source="other_troubles",
     regex=[r"(?<!bilan de )(?<!bilan )troubles?", "anomalies?"],
     regex_attr="NORM",
     assign=dict(
         name="trouble_complement",
         regex=make_assign_regex(["sommeil"]),
+        window=8,
+        required=True,
+    ),
+    exclude=dict(
+        name="paradoxal",
+        regex=["paradoxal"],
+        window=9,
+    ),
+)
+
+frailty = dict(
+    source="altered_frailty",
+    regex=["fragilite", "fragile"],
+    regex_attr="NORM",
+    assign=dict(
+        name="frailty_complement",
+        regex=make_assign_regex(["thymique"]),
         window=6,
         required=True,
     ),
@@ -105,8 +138,12 @@ troubles = dict(
 ralentissement = dict(
     source="other_ralentissement",
     regex=["ralentissement"],
-    exclude=dict(regex=["transit"], window=(-2, 2)),
-    assign=dict(name="complement", regex=make_assign_regex(["ideatoire"]), window=3),
+    assign=dict(
+        name="complement",
+        regex=make_assign_regex(["ideatoire"]),
+        window=3,
+        required=True,
+    ),
 )
 
 morale = dict(
@@ -160,9 +197,11 @@ default_patterns = normalize_space_characters(
         other,
         ralentissement,
         sleep,
+        insomnia,
         troubles,
         morale,
         night,
         status,
+        frailty,
     ]
 )
