@@ -2,10 +2,32 @@
 
 ## Unreleased
 
+### Fixed
+
+- Use protocol-provided filesystem when writing parquet files, ie now only telling the program to write parquets to "hdfs:///users/x/y" should suffice.
+- Optimized CRF implementation
+
+## v0.20.0 (2025-12-12)
+
+### Added
+
+- Support passing multiple paths to `edsnlp.read_parquet`
+- New `eds.llm_span_qualifier` component to perform span classification tasks using LLMs
+
 ### Changed
 
-- :explosion: EDS-NLP now requires Python 3.10 or later.
+- :boom: EDS-NLP now requires Python 3.10 or later.
 - Dependencies (dev, docs and setup) are now listed in dependency groups and installable via `pip install -e . --group the_group`
+- .ipynb_checkpoints/* files are not longer included in packaged models
+
+### Fixed
+
+- Move the model to the device (e.g., a GPU) before running the post_init step and only post_init with the data included of the current training phase
+- Correctly check the filesystem provided by the user against the given URI when loading data files
+- Don't pass seed to openai API calls (only as extra body)
+- Default to alignment threshold = 0 (better recall) for LLM annotated markup alignment with the original text
+- Fix `eds.llm_markup_extractor` context splitting to yield full docs and not parts of docs
+- Fix accelerate trackers integration for most loggers, in particular in multi GPU training
 
 ## v0.19.0 (2025-10-04)
 

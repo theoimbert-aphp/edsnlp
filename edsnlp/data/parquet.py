@@ -26,9 +26,9 @@ class ParquetReader(FileBasedReader):
 
     def __init__(
         self,
-        path: Union[str, Path],
+        path: AsList[Union[str, Path]],
         *,
-        filesystem: Optional[FileSystem] = None,
+        filesystem: Optional[Union[FileSystem, str]] = None,
         shuffle: Literal["dataset", "fragment", False] = False,
         seed: Optional[int] = None,
         loop: bool = False,
@@ -43,18 +43,22 @@ class ParquetReader(FileBasedReader):
         self.rng = random.Random(seed)
         self.loop = loop
         self.work_unit = work_unit
-        assert not (work_unit == "fragment" and shuffle == "dataset"), (
-            "Cannot shuffle at the dataset level and dispatch tasks at the "
-            "fragment level. Set shuffle='fragment' or work_unit='record'."
-        )
+        if work_unit == "fragment" and shuffle == "dataset":
+            raise Exception(
+                "Cannot shuffle at the dataset level and dispatch tasks at the "
+                "fragment level. Set shuffle='fragment' or work_unit='record'."
+            )
         # Either the filesystem has not been passed
         # or the path is a URL (e.g. s3://) => we need to infer the filesystem
-        self.fs, self.path = normalize_fs_path(filesystem, path)
+        fs_and_paths = [normalize_fs_path(filesystem, p) for p in path]
+        self.path = path
         self.fragments: List[ParquetFileFragment] = list(
-            pyarrow.dataset.dataset(
-                self.path,
+            fragment
+            for fs, p in fs_and_paths
+            for fragment in pyarrow.dataset.dataset(
+                p,
                 format="parquet",
-                filesystem=self.fs,
+                filesystem=fs,
             ).get_fragments()
         )
 
@@ -119,7 +123,7 @@ class ParquetWriter(BatchWriter):
         batch_by: BatchBy = None,
         write_in_worker: bool = False,
         overwrite: bool,
-        filesystem: Optional[FileSystem] = None,
+        filesystem: Optional[Union[FileSystem, str]] = None,
         pyarrow_write_kwargs: Optional[Dict[str, Any]] = None,
     ):
         super().__init__()
@@ -144,7 +148,6 @@ class ParquetWriter(BatchWriter):
                 )
             for file in dataset.files:
                 self.fs.rm_file(file)
-        self.fs = filesystem
         batch_size, batch_by = Stream.validate_batching(batch_size, batch_by)
         if batch_by in ("docs", "doc", None, batchify) and batch_size is None:
             warnings.warn(
@@ -168,6 +171,7 @@ class ParquetWriter(BatchWriter):
             filesystem=self.fs,
             **self.pyarrow_write_kwargs,
         )
+        # data is already written, no need to send it to the main process
         return (None, len(batch))
 
     def consolidate(
@@ -180,10 +184,10 @@ class ParquetWriter(BatchWriter):
 
 @registry.readers.register("parquet")
 def read_parquet(
-    path: Union[str, Path],
+    path: AsList[Union[str, Path]],
     converter: Optional[AsList[Union[str, Callable]]] = None,
     *,
-    filesystem: Optional[FileSystem] = None,
+    filesystem: Optional[Union[FileSystem, str]] = None,
     shuffle: Literal["dataset", "fragment", False] = False,
     seed: Optional[int] = None,
     loop: bool = False,
@@ -219,10 +223,10 @@ def read_parquet(
 
     Parameters
     ----------
-    path: Union[str, Path]
+    path: AsList[Union[str, Path]]
         Path to the directory containing the parquet files (will recursively look for
         files in subdirectories). Supports any filesystem supported by pyarrow.
-    filesystem: Optional[AbstractFileSystem] = None,
+    filesystem: Optional[Union[FileSystem, str]] = None,
         The filesystem to use to write the files. If None, the filesystem will be
         inferred from the path (e.g. `s3://` will use S3).
     shuffle: Literal["dataset", "fragment", False]
@@ -297,7 +301,7 @@ def write_parquet(
     batch_by: BatchBy = None,
     write_in_worker: bool = True,
     overwrite: bool = False,
-    filesystem: Optional[FileSystem] = None,
+    filesystem: Optional[Union[FileSystem, str]] = None,
     execute: bool = True,
     converter: Optional[Union[str, Callable]] = None,
     pyarrow_write_kwargs: Optional[Dict[str, Any]] = None,
@@ -352,7 +356,7 @@ def write_parquet(
         batching there can produce fragments that respect the original order.
     overwrite: bool
         Whether to overwrite existing directories.
-    filesystem: Optional[AbstractFileSystem] = None,
+    filesystem: Optional[Union[FileSystem, str]] = None,
         The filesystem to use to write the files. If None, the filesystem will be
         inferred from the path (e.g. `s3://` will use S3).
     pyarrow_write_kwargs: Optional[Dict[str, Any]]

@@ -13,11 +13,7 @@ dependencies = [
     "pytz",
     "pysimstring>=1.2.1",
     "regex",
-    # spacy doesn't provide binaries for python<3.9 from 3.8.2 so we need to cap it ourself
-    # at the moment, spacy >=3.8.7 requires cython 3 and messes up the registration of factories
     "spacy>=3.8.7,<4",
-    # thinc doesn't provide binaries for python<3.9 from 8.2.5 so we need to cap it ourself
-    # blis>1.2.0 (dependency of thinc) doesn't provide binaries for python<3.10 so we need to cap it ourself
     "confit>=0.9.0",
     "tqdm",
     "umls-downloader>=0.1.1",
@@ -44,51 +40,44 @@ ml = [
 ]
 
 [dependency-groups]
-dev-no-ml = [
+docs = [
+    "mkdocs-eds@git+https://github.com/aphp/mkdocs-eds.git@main#egg=mkdocs-eds",
+    "mike",
+    "markdown-grid-tables==0.4.0",
+    "edsnlp[ml]",
+]
+dev = [
     "pre-commit>=2.21.0",
     "pytest>=7.1.0",
     "pytest-cov>=3.0.0",
     "pytest-timeout",
-
     # Data libs
     "pyspark<4.0.0",  # TODO: uncap when we figure out the CI issue with pyspark 4.0.0
     "polars",
-
     "scikit-learn",
-
     # Packaging
     "poetry",
-
-    { include-group = "docs-no-ml" },
-
+    # Docs
+    "mkdocs-eds@git+https://github.com/aphp/mkdocs-eds.git@main#egg=mkdocs-eds",
+    "mike",
+    "markdown-grid-tables==0.4.0",
     # LLM
     "bm25s",
     "PyStemmer",
     "openai",
-]
-docs-no-ml = [
-    "mkdocs-eds@git+https://github.com/aphp/mkdocs-eds.git@main#egg=mkdocs-eds",
-    "mike",
-    "markdown-grid-tables==0.4.0",
-]
-docs = [
-    { include-group = "docs-no-ml" },
-    { include-group = "ml" },
-]
-dev = [
-    { include-group = "dev-no-ml" },
-    { include-group = "ml" },
+    "edsnlp[ml]",
     "tensorboard",
     "optuna>=4.0.0",
     "plotly>=5.18.0", # required by optuna viz
     "ruamel.yaml>=0.18.0",
     "configobj>=5.0.9",
-    "scikit-learn",
+    "tensorboardx>=2.6.4",
+    "aim>=3.29.1; python_version<'3.13'",
 ]
-setup = [
-    "mlconjug3<3.9.0",  # bug https://github.com/Ars-Linguistica/mlconjug3/pull/506
-    "numpy<2",  # mlconjug has scikit-learn dep which doesn't support for numpy 2 yet
-]
+# setup = [
+#     "mlconjug3<3.9.0",  # bug https://github.com/Ars-Linguistica/mlconjug3/pull/506
+#     "numpy<2",  # mlconjug has scikit-learn dep which doesn't support for numpy 2 yet
+# ]
 ml = [
     "edsnlp[ml]"
 ]
@@ -115,6 +104,7 @@ version = { attr = "edsnlp.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["."]
+include = ["edsnlp*"]
 
 [project.entry-points."edsnlp_core"]
 "pipeline"  = "edsnlp.core.pipeline:Pipeline"
@@ -230,7 +220,8 @@ where = ["."]
 "eds.markup_to_doc"               = "edsnlp.data.converters:MarkupToDocConverter"
 
 # LLM
-"eds.llm_markup_extractor"       = "edsnlp.pipes.llm.llm_markup_extractor.factory:create_component"
+"eds.llm_markup_extractor"        = "edsnlp.pipes.llm.llm_markup_extractor.factory:create_component"
+"eds.llm_span_qualifier"          = "edsnlp.pipes.llm.llm_span_qualifier.factory:create_component"
 
 # Deprecated (links to the same factories as above)
 "SOFA"                   = "edsnlp.pipes.ner.scores.sofa.factory:create_component"
@@ -465,9 +456,13 @@ skip = [
     "*-musllinux*", # Skip slow Linux
     "*-manylinux_ppc64le", # Skip slow Linux
     "*-manylinux_s390x", # Skip slow Linux
-    "*p314-*",
+    "*p314*",  # spacy uses confection which uses pydantic v1 which isn't supported on py314
 ]
 
 before-test = 'pip install pytest "urllib3<2"'
 test-extras = "ml"
+test-skip = [
+    "cp313-macosx_x86_64",
+    "cp314-macosx_x86_64",
+]
 test-command = "pytest {project}/tests/pipelines/test_pipelines.py"
